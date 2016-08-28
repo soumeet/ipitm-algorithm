@@ -5,7 +5,7 @@ dataset=sys.argv[1]
 transactions=[[0,[],0]] #transactions=[[tid, items[], sot]]
 no_of_transactions=0
 max_sot=0
-partition=[[0,[0,[]],0]] #partition=[pid, [tid, items[]], sot]
+partitions=[[0,[0,[]],0]] #partition=[[ pid, [tid, items[]], sot]]
 def read_transactions():
 	with open(dataset, newline='') as csvfile:
             spamreader = csv.reader(csvfile)
@@ -21,19 +21,23 @@ def read_transactions():
 
 def partition_transactions():
 		pid=1
-		transaction_list=[]
-		sot=1
-		for row in transactions:
-			if sot==row[2]:
-			#transaction_list.append([row[0],row[1]])
-			else:
-				break
-		#partition.append([pid, transaction_list, sot])
+		i=1
+		for sot in range(1,25):
+                        transaction_list=[]
+                        while (i!=no_of_transactions and sot==transactions[i][2]):
+                                transaction_list.append([transactions[i][0],transactions[i][1]])
+                                i+=1
+                        partitions.append([pid, transaction_list, sot])
+                        pid+=1
 
 read_transactions()
 no_of_transactions=len(transactions)
 #print(no_of_transactions)
 transactions.sort(key=lambda x: x[2])
 for row in transactions:
-	print(row)
+        print(row)
 partition_transactions()
+for pid in partitions:
+        print("pid: ",pid[0], " sot: ",pid[2])
+        for tid in pid[1]:
+                print(tid)
