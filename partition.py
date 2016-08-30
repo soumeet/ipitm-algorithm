@@ -32,13 +32,16 @@ def read_transactions():
 def partition_transactions():
 		pid=1
 		row=1
+		c=0
 		for sot in range(1,max_sot+1):
-                        transaction_list=[]
-                        while (row!=no_of_transactions and sot==transactions[row][2]):
-                                transaction_list.append([transactions[row][0],transactions[row][1]])
-                                row+=1
-                        partitions.append([pid, transaction_list, sot])
-                        pid+=1
+			transaction_list=[]
+			while (row!=no_of_transactions and sot==transactions[row][2]):
+				transaction_list.append([transactions[row][0],transactions[row][1]])
+				row+=1
+				c+=1
+			partitions.append([pid, transaction_list, sot])
+			pid+=1
+		print(c)
 
 read_transactions()
 no_of_transactions=len(transactions)
