@@ -9,7 +9,7 @@ item_list=[]
 no_of_items=0
 max_sot=0
 partitions=[[0,[0,[]],0]] #partition=[[ pid, [tid, items[]], sot]]
-ifm=np.zeros(shape=(1000,2))
+ifm=[]
 
 def read_transactions():
 	with open(dataset, newline='') as csvfile:
@@ -43,6 +43,17 @@ def partition_transactions():
 			pid+=1
 		print(c)
 
+def generate_ifm():
+        for i in range(1, max_sot+1):
+                sot=partitions[i][2]
+                tid_count=len(partitions[i][1])
+                for j in range(0, tid_count):
+                        print(partitions[i][1][j][1])
+                        '''for k in range(1, sot):
+                                print(partitions[i][1][j][1][k],", ", end='')'''
+                        for item in partitions[i][1][j][1]:
+                                print(item,", ", end='')
+
 read_transactions()
 no_of_transactions=len(transactions)
 no_of_items=len(item_list)
@@ -50,13 +61,14 @@ no_of_items=len(item_list)
 #print(max_sot)
 #print(no_of_items)
 transactions.sort(key=lambda x: x[2])
-for row in transactions:
+'''for row in transactions:
         print(row)
 for item in item_list:
-        print(item)
+        print(item)'''
 partition_transactions()
 for pid in partitions:
         print("pid: ",pid[0], " sot: ",pid[2])
         for tid in pid[1]:
                 print(tid)
-print(ifm)
+generate_ifm()
+#print(partitions[24][1][0][1]))
