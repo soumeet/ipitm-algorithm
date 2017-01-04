@@ -3,12 +3,12 @@ import csv
 import numpy as np
 
 dataset=sys.argv[1]
-transactions=[[0,[],0]] #transactions=[[tid, items[], sot]]
+transactions=[] #transactions=[[tid, items[], sot]]
 no_of_transactions=0
 item_list=[]
 no_of_items=0
 max_sot=0
-partitions=[[0,[0,[]],0]] #partition=[[ pid, [tid, items[]], sot]]
+partitions=[] #partition=[[ pid, [tid, items[]], sot]]
 ifm=[]
 
 def read_transactions():
@@ -31,7 +31,7 @@ def read_transactions():
 
 def partition_transactions():
 		pid=1
-		row=1
+		row=0
 		c=0
 		for sot in range(1,max_sot+1):
 			transaction_list=[]
@@ -44,15 +44,16 @@ def partition_transactions():
 		print(c)
 
 def generate_ifm():
-        for i in range(1, max_sot+1):
+        for i in range(0, max_sot): 'loop through partition_id'
                 sot=partitions[i][2]
                 tid_count=len(partitions[i][1])
-                for j in range(0, tid_count):
-                        print(partitions[i][1][j][1])
-                        '''for k in range(1, sot):
-                                print(partitions[i][1][j][1][k],", ", end='')'''
-                        for item in partitions[i][1][j][1]:
-                                print(item,", ", end='')
+                ifm_row=[0]*1000
+                for j in range(0, tid_count): 'loop through transaction_list'
+                        #print(partitions[i][1][j][1], end='')
+                        print(ifm_row)
+                        for k in range(0, sot): 'loop through transaction_id'
+                                #print(partitions[i][1][j][1][k]," ", end='')
+                                print("tid: ", partitions[i][1][j][0], "item: ", partitions[i][1][j][1][k])
 
 read_transactions()
 no_of_transactions=len(transactions)
@@ -61,14 +62,13 @@ no_of_items=len(item_list)
 #print(max_sot)
 #print(no_of_items)
 transactions.sort(key=lambda x: x[2])
-'''for row in transactions:
+for row in transactions:
         print(row)
-for item in item_list:
+'''for item in item_list:
         print(item)'''
 partition_transactions()
-for pid in partitions:
+'''for pid in partitions:
         print("pid: ",pid[0], " sot: ",pid[2])
         for tid in pid[1]:
-                print(tid)
+                print(tid)'''
 generate_ifm()
-#print(partitions[24][1][0][1]))
