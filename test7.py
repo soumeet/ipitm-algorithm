@@ -9,12 +9,13 @@ no_of_transactions=0
 
 def read_transactions():
 	with open(dataset, newline='') as csvfile:
-            spamreader = csv.reader(csvfile)
+            spamreader = csv.reader(csvfile)         
             for row in spamreader:
                 transactions.append([int(row[0]),row[1:]])
 
-def sim(l1, l2):
-        return ((len(set(l1).intersection(l2)))/(len(set(l1).union(l2))))
+def similarity(l1, l2):
+        tmp=((len(set(l1).intersection(l2)))/(len(set(l1).union(l2))))
+        return tmp
 
 start_time=time.time()
 read_transactions()
@@ -22,9 +23,13 @@ no_of_transactions=len(transactions)
 print(no_of_transactions)
 #print(transactions)
 
+sim=np.zeros((no_of_transactions,no_of_transactions))
 for i in range(no_of_transactions):
         for j in range(i+1,no_of_transactions):
-                print(transactions[i], " and ", transactions[j], "sim: ", sim(transactions[i][1],transactions[j][1]))
+                #print(transactions[i], " and ", transactions[j], "sim: ", similarity(transactions[i][1],transactions[j][1]))
+                sim[i][j]=similarity(transactions[i][1],transactions[j][1])
+#print(sim)
+np.savetxt("out7.csv", sim, '%2.3f', delimiter=",")
 
 print("execution time: ", time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
 
