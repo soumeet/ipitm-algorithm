@@ -1,6 +1,7 @@
 import sys
 import csv
 import time
+import traceback
 import numpy as np
 
 start_time=time.time()
@@ -10,7 +11,7 @@ no_of_transactions=0
 items_list=[]
 no_of_items=0
 max_sot=0
-partitions=[] #partition=[[ pid, [tid, items[]], sot]]
+partitions=[] #partition=[[ pid, [TID, items[]], sot, identicalTID]]
 ifm=np.array([])
 
 '''
@@ -23,6 +24,7 @@ def csv_writer():
 
 def sim(l1, l2):
 	return ((len(set(l1).intersection(l2)))/(len(set(l1).union(l2))))
+
 
 def read_transactions():
 	with open(dataset, newline='') as csvfile:
@@ -58,28 +60,39 @@ def generate_ifm():
 		global ifm
 		transactions.sort(key=lambda x: x[0])
 		#ifm=[[0]*(no_of_items+1)]*no_of_transactions
-		ifm=np.zeros((no_of_transactions,no_of_items))
+		ifm=np.zeros((no_of_transactions+1,no_of_items+1))
+		for i in range(no_of_items):
+			ifm[0,i+1]=i
+		for i in range(no_of_transactions+1):
+			ifm[i,0]=i
 
-
-		for i in range(no_of_transactions):
+		for i in range(1,no_of_transactions):
 			tid=transactions[i][0]
 			transaction_list=transactions[i][1]
 			for items in transaction_list:
-				ifm[tid-1][items]+=1
+				ifm[tid][items+1]+=1
 
 def ipitm():
-'''
-        for i in range(0, max_sot):
-        	sot=partitions[i][2]
-        	tid_count=len(partitions[i][1])
-        	ifm_row=[0]*1000
-        	for j in range(0, tid_count):
-        		#print(partitions[i][1][j][1], end='')
-        		print(ifm_row)
-        		for k in range(0, sot):
-        			#print(partitions[i][1][j][1][k]," ", end='')
-        			print("tid: ", partitions[i][1][j][0], "item: ", partitions[i][1][j][1][k])
-'''
+	global ifm
+	for i in range(2,max_sot):
+		sot=partitions[i][2]
+		tid_count=len(partitions[i][1])
+		c=0
+		for j in range(len(partitions[i][1])):
+			identical=[]
+			try:
+				for k in range(j+1,len(partitions[i][1])):
+					if sim(partitions[i][1][j][1],partitions[i][1][k][1])==1.0:
+						for items in partitions[i][1][j][1]:
+							ifm[partitions[i][1][j][0],items+1]+=1
+							identical.append(partitions[i][1][k][0])
+							ifm=np.delete(ifm,(list(ifm[:,0]).index(partitions[i][1][k][0])),0)
+							del partitions[i][1][k]
+			except:
+				#traceback.print_exc()
+				partitions[i][1][j].append(identical)
+				continue
+
 
 read_transactions()
 no_of_transactions=len(transactions)
@@ -88,14 +101,10 @@ print("no of transactions: ",no_of_transactions)
 print("maximum size of transaction: ",max_sot)
 print("total no items: ",no_of_items)
 print("items list: ",items_list)
-'''
-for row in transactions:
-        print(row)
-'''
+
 
 partition_transactions()
-
-out_partition=csv.writer(open("out_partition.csv","w"), delimiter=',',quoting=csv.QUOTE_ALL)
+out_partition=csv.writer(open("partition.csv","w"), delimiter=',',quoting=csv.QUOTE_ALL)
 out_partition.writerow(['PartitionID','TID','Items','SOT'])
 for pid in partitions:
 		#print(pid)
@@ -110,5 +119,22 @@ for pid in partitions:
             	out_partition.writerow(['',tid[0],tid[1],''])
 
 generate_ifm()
-np.savetxt("out_ifm.csv",ifm,delimiter=",")
+np.savetxt("ifm.csv",ifm,delimiter=",")
+
+ipitm()
+out_partition=csv.writer(open("partition_updated.csv","w"), delimiter=',',quoting=csv.QUOTE_ALL)
+out_partition.writerow(['PartitionID','TID','Items','IdenticalTID'])
+for pid in partitions:
+        f=0
+        for tid in pid[1]:
+            if f==0:
+            	out_partition.writerow([pid[0],tid[0],tid[1],pid[2]])
+            	f+=1
+            else:
+            	if len(tid)==3:
+            		out_partition.writerow(['',tid[0],tid[1],tid[2]])
+            	else:
+            		out_partition.writerow(['',tid[0],tid[1],''])
+
+np.savetxt("ifm_updated.csv",ifm,delimiter=",")
 print("execution time: ", time.strftime("%H:%M:%S", time.gmtime(time.time() - start_time)))
